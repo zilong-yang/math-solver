@@ -49,6 +49,7 @@ imshow(cell2mat(comps(2)));
 subplot(1,3,3);
 imshow(cell2mat(comps(3)));
 
+
     
 % end
 pause;
