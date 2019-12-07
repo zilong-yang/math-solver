@@ -1,64 +1,46 @@
 clearvars;
-I = imread("img1.jpeg");
-[m, n] = size(I);
+img = imread("thumbnail_Image-33.png");
 
-% convert intensity values to doubles (0-1)
-img = im2double(I);
+% conert intensity values to doubles (0-1)
 
 % convert image to black and white
 img = rgb2gray(img);
-
+img = imrotate(img,90);
 % make img binary using 0.4 as threshold
 % 0.4 is selected to allow darker background color
 % to be thresholded (become white)
 % invert result for finding connected components
-binary = ~imbinarize(img, 0.4);
-img = double(binary);
 
-% use gaussian filter to remove noise
-% gaus_filter = fspecial('gaussian');
-% img = imfilter(img, gaus_filter);
-img = imgaussfilt(img, 1);
+img = ~imbinarize(img,0.25);
+imwrite(img,'binaryimage.jpeg')
+img = bwareaopen(img,100);
+pause(1)
 
-% label connected components
-% cc is a struct containing info about connectivity of img
-cc = bwconncomp(img, 4);
-nconn = cc.NumObjects;
+%returns the number of components and the 
+[L, Ne] = bwlabel(img);
+figure
+imshow(L)
+pause
+propied = regionprops(L, 'BoundingBox');
+hold on
 
-% store each component matrix into a cell array
-comps = cell(nconn, 1);
-for i=1:nconn
-    c = component(img, cc.PixelIdxList{i});
-    comps(i) = {c};
+for n=1:size(propied,1)
+    rectangle('Position',propied(n).BoundingBox,'EdgeColor','g','LineWidth',2)
 end
 
-% result image
-figure(1);
-subplot(1,2,1);
-imshow(I);
-title("Original");
-subplot(1,2,2);
-imshow(img);
-title("Result");
+hold off
+pause(1)
 
-figure(2);
-subplot(1,3,1);
-imshow(cell2mat(comps(1)));
-subplot(1,3,2);
-imshow(cell2mat(comps(2)));
-subplot(1,3,3);
-imshow(cell2mat(comps(3)));
+figure
+for n=1:Ne
+    [r,c] = find(L==n);
+    n1=img(min(r):max(r),min(c):max(c));
+    x = feature_vec(n1)
+    imshow(~n1);
+    pause
+end
 
-
-    
 % end
 pause;
 close all;
 
-function [result] = component(I, C)
-% Return a matrix in which all non-component 
-% indices are set to 0 (black)
-I(1:min(C)-1) = 0;
-I(max(C)+1:end) = 0;
-result = I;
-end
