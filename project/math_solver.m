@@ -62,7 +62,7 @@ img = imgaussfilt(img);
 
 % threshold image using bradley's method
 % img will turn into a logical matrix
-img = ~bradley(img, [50, 50]);
+img = ~mybradley(img);
 
 img = bwareaopen(img, 30);
 
@@ -129,4 +129,39 @@ disp(expr + " = " + int2str(answer));
  
 % pause;
 % close all;
+end
+
+% src = https://people.scs.carleton.ca/~roth/iit-publications-iti/docs/gerh-50002.pdf
+% implementation of bradleys method simplified with some matlab methods
+function image = mybradley(img)
+
+T = 10;
+
+mean = averagefilter(img, 'replicate');
+
+%set image to all ones
+output = ones(size(img));
+
+%set 0's based on the filtered integral image
+output(img <= mean*(1-T/100)) = 0;
+
+image = output;
+end
+
+% src = https://people.scs.carleton.ca/~roth/iit-publications-iti/docs/gerh-50002.pdf
+function mean = averagefilter(img,padding)
+[h w] = size(img);
+m = 50;
+
+img  = padarray(img, [floor((m+1)/2) floor((m+1)/2)], padding, 'pre');
+img = padarray(img, [ceil((m-1)/2) ceil((m-1)/2)], padding, 'post');
+img = double(img);
+  
+intImg = integralImage(img);
+
+newImg = intImg(1+m:h+m, 1+m:w+m) + intImg(1:h, 1:w) - intImg(1+m:h+m, 1:w) - intImg(1:h, 1+m:w+m);
+
+newImg = newImg/(m^2);
+
+mean = newImg;
 end
